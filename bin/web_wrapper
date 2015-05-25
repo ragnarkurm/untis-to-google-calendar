@@ -31,6 +31,7 @@ if [ "$ec" -ne 0 ]; then
 	exit 1
 fi
 
-scp -q -r "$WEB_DIR"/* drupal7@www.waalaskala.com:/www/waalaskala/html/cal/
+# Change this to show lists of calendars
+# scp -q -r "$WEB_DIR"/* user@host:/path/to/htdocs/cal/
 
 exit 0
