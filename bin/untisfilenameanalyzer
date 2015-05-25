@@ -1,0 +1,62 @@
+#!/usr/bin/python3
+
+from datetime import datetime
+import re
+import sys
+
+self = sys.argv.pop(0)
+self = re.sub(r'^.*/', '', self)
+if len(sys.argv) != 1:
+	sys.exit('Usage: {} <filename.xml>'.format(self))
+
+file = sys.argv.pop(0)
+file = re.sub(r'^.*/', '', file)
+
+def parsedate(name, date):
+	try:
+		date = datetime.strptime(date, '%Y%m%d')
+	except ValueError as e:
+		sys.exit('Error: {}: {}'.format(name, str(e)))
+	return date
+
+def printarg(name, date):
+	print('--{}={}'.format(name, date.strftime('%Y-%m-%d')))
+
+#plain
+if re.match(r'^untis.xml$', file):
+	sys.exit()
+
+# begin
+match = re.match(r'^untis__(\d{8})-.xml$', file)
+if match:
+	begin = match.group(1)
+	begin = parsedate('Begin', begin)
+	printarg('begin', begin)
+	sys.exit()
+
+# end
+match = re.match(r'^untis__-(\d{8}).xml$', file)
+if match:
+	end = match.group(1)
+	end = parsedate('End', end)
+	printarg('end', end)
+	sys.exit()
+
+# begin-end
+match = re.match(r'^untis__(\d{8})-(\d{8}).xml$', file)
+if match:
+	begin = match.group(1)
+	begin = parsedate('Begin', begin)
+	end = match.group(2)
+	end = parsedate('End', end)
+	if begin >= end:
+		begin = begin.strftime('%Y-%m-%d')
+		end = end.strftime('%Y-%m-%d')
+		print('Begin ({}) must be less than end ({}).'.format(begin, end))
+		sys.exit(1)
+	printarg('begin', begin)
+	printarg('end', end)
+	sys.exit()
+
+# invalid
+sys.exit('Invalid filename: {}.'.format(file))

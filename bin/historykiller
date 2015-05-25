@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# prepend + or - as it is find mtime argument
+readonly age="+360"
+
+DIR=$( cd "$( /usr/bin/dirname "${BASH_SOURCE[0]}" )" && pwd )
+source "$DIR/../etc/conf.bash"
+
+export PATH="/bin:/usr/bin"
+
+find "$UNTIS_HIST_DIR" -maxdepth 1 -type f -mtime "$age" -exec rm {} \;

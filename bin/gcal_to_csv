@@ -1,0 +1,21 @@
+#!/usr/bin/python3
+
+from basepath import basepath
+from conf import opts
+from oauth2client import tools
+import argparse
+import calendarlist
+import login
+
+flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+service = login.login(flags, opts)
+active = calendarlist.list(service)
+active = calendarlist.id2map(active)
+for (untis_id, c) in active.items():
+	gcal_id = c['id']
+	name = c['summary']
+	timezone = c['timeZone']
+	data = [untis_id, gcal_id, timezone, name]
+	data = map(lambda d: d.replace(opts['csv_separator'], opts['csv_replacement']), data)
+	data = opts['csv_separator'].join(data)
+	print(data)

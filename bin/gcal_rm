@@ -1,0 +1,40 @@
+#!/usr/bin/python3 -u
+# -*- coding: utf-8 -*-
+
+from basepath import basepath
+from conf import opts
+import calendarlist
+import login
+import logs
+import untis
+
+def args():
+
+	from oauth2client import tools
+	import argparse
+
+	tools.argparser.add_argument(
+		'untis_id',
+		help = 'Untis ID. Class (CL_xxx), Room (CL_xxx) or Teacher (TR_xxx).',
+	)
+
+	flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+	return flags
+
+def main():
+	flags = args()
+	logs.logs('h1', 'Logging in')
+	service = login.login(flags, opts)
+	logs.logs('h1', 'Fetching data')
+	active = calendarlist.list(service)
+	activemap = calendarlist.id2map(active)
+	id = flags.untis_id
+	if id not in activemap:
+		logs.logs('err', 'No such calendar: ' + id)
+		import sys
+		sys.exit(1)
+
+	logs.logs('h1', 'Deleting')
+	calendarlist.delete(service, activemap[id]['id'])
+
+main()

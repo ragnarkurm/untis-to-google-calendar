@@ -1,0 +1,53 @@
+#!/usr/bin/python3 -u
+# -*- coding: utf-8 -*-
+
+from basepath import basepath
+from conf import opts
+import calendarlist
+import calendars
+import login
+import logs
+import untis
+
+def args():
+
+	from oauth2client import tools
+	import argparse
+
+	tools.argparser.add_argument(
+		'untis_id_from',
+		help = 'Untis ID to change from. Class (CL_xxx), Room (CL_xxx) or Teacher (TR_xxx).',
+	)
+
+	tools.argparser.add_argument(
+		'untis_id_to',
+		help = 'Untis ID to change to. Class (CL_xxx), Room (CL_xxx) or Teacher (TR_xxx).',
+	)
+
+
+	flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+	return flags
+
+def main():
+	flags = args()
+	logs.logs('h1', 'Logging in')
+	service = login.login(flags, opts)
+	logs.logs('h1', 'Fetching data')
+	active = calendarlist.list(service)
+	activemap = calendarlist.id2map(active)
+	idfrom = flags.untis_id_from
+	if idfrom not in activemap:
+		logs.logs('err', 'No such calendar: ' + idfrom)
+		import sys
+		sys.exit(1)
+
+	calendar = activemap[idfrom]
+	idto = flags.untis_id_to
+
+	logs.logs('h1', 'Renaming: ' + idfrom + '->' + idto)
+	calendars.patch(service, {
+		'id': calendar['id'],
+		'description': calendars.encode(idto),
+	})
+
+main()

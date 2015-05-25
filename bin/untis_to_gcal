@@ -1,0 +1,7 @@
+#!/usr/bin/python3 -u
+# -*- coding: utf-8 -*-
+
+from basepath import basepath
+from conf import opts
+import main
+main.main(opts)

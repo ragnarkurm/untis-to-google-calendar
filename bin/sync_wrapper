@@ -1,0 +1,41 @@
+#!/bin/bash
+
+DIR=$( cd "$( /usr/bin/dirname "${BASH_SOURCE[0]}" )" && pwd )
+source "$DIR/../lib/lock.bash"
+source "$DIR/../etc/conf.bash"
+export PATH="/bin:/usr/bin:$BASE/bin"
+
+for xml in `find "$UNTIS_DATA_DIR" -maxdepth 1 -type f -name "*.xml"`
+do
+	timestamp=`date '+%Y%m%d-%H%M%S'`
+
+	log=$(basename "$xml" .xml)
+	log="$UNTIS_DATA_DIR/$log.log"
+	if [ -f "$log" ]; then
+		continue
+	fi
+
+	args=`untisfilenameanalyzer "$xml" 2>"$log"`
+	ec="$?"
+	if [ "$ec" -ne 0 -o -s "$log" ]; then
+		cat "$log"
+		continue
+	fi
+
+	stdbuf -o L untis_to_gcal $args "$xml" >"$log" 2>&1
+	ec="$?"
+	if [ "$ec" -ne 0 ]; then
+		cat "$log"
+		continue
+	fi
+
+	xml_hist=`basename "$xml" .xml`
+	xml_hist="$UNTIS_HIST_DIR/$timestamp.xml"
+	mv "$xml" "$xml_hist"
+
+	log_hist=`basename "$log" .log`
+	log_hist="$UNTIS_HIST_DIR/$timestamp.log"
+	mv "$log" "$log_hist"
+
+	web_wrapper
+done

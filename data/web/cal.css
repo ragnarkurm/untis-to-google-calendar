@@ -1,0 +1,51 @@
+body {
+	font-family: 'Open Sans', sans-serif;
+}
+
+h2 {
+	text-align: center;
+}
+
+.container {
+	display: flex;
+	flex-direction: row;
+	flex-wrap: nowrap;
+	justify-content: center;
+	align-items: stretch;
+}
+
+.item {
+	display: block;
+	width: 300px;
+	margin: 0 0.5em;
+	border: 0;
+	padding: 0 0 1em 0;
+	background-color: rgba(0, 0, 0, 0.05);
+	vertical-align: top;
+}
+
+ul {
+	margin: 0;
+	border: 0;
+	padding: 0;
+	list-style: none;
+}
+
+li {
+	display: block;
+	margin: 0;
+	border: 0;
+	padding: 0 1em;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+li:hover {
+	background-color: rgba(0, 0, 0, 0.1)
+}
+
+a {
+	display: block;
+	line-height: 1.5;
+	text-decoration: none;
+}

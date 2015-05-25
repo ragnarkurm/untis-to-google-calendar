@@ -1,0 +1,13 @@
+__pycache__
+data/untis/*.xml
+data/untis/*.log
+data/untis/history/*.xml
+data/untis/history/*.log
+data/web/cal.html
+doc/*.txt
+etc/cal.tpl
+etc/client_secret.json
+etc/conf.bash
+etc/conf.php
+etc/conf.py
+state/[a-z]*

@@ -1,0 +1,60 @@
+#!/usr/bin/python3 -u
+# -*- coding: utf-8 -*-
+
+from basepath import basepath
+from conf import opts
+import calendarlist
+import login
+import logs
+import untis
+
+def args():
+
+	from oauth2client import tools
+	import argparse
+
+	tools.argparser.add_argument(
+		'untis_xml_file',
+		help = 'Untis XML file',
+	)
+
+	flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
+	return flags
+
+def main():
+	flags = args()
+	events = untis.untis(flags.untis_xml_file, opts)
+	logs.logs('h1', 'Fetching Google Calendar')
+	logs.logs(None, 'Logging in')
+	service = login.login(flags, opts)
+	logs.logs(None, 'Fetching data')
+	active = calendarlist.list(service)
+	logs.logs(None, 'Remapping')
+	activemap = calendarlist.id2map(active)
+	active2 = set(activemap.keys())
+
+	logs.logs('h1', 'Diff')
+	untis2 = []
+	untismap = {}
+	for section in ['rooms', 'teachers', 'classes']:
+		untis2 = untis2 + list(events[section].keys())
+		untismap.update(events[section])
+	untis2 = set(untis2)
+
+	deleted = active2 - untis2
+	if len(deleted) > 0:
+		logs.logs('h2', 'To be deleted')
+		for id in deleted:
+			logs.logs(None, id + ': ' + activemap[id]['summary'])
+	else:
+		logs.logs('h2', 'Nothing to delete')
+
+	inserted = untis2 - active2
+	if len(inserted) > 0:
+		logs.logs('h2', 'To be inserted')
+		for id in inserted:
+			logs.logs(None, id + ': ' + untismap[id])
+	else:
+		logs.logs('h2', 'Nothing to insert')
+
+main()
