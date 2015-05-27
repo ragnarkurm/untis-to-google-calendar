@@ -5,7 +5,7 @@ source "$DIR/../lib/lock.bash"
 source "$DIR/../etc/conf.bash"
 export PATH="/bin:/usr/bin:$BASE/bin"
 
-for xml in `find "$UNTIS_DATA_DIR" -maxdepth 1 -type f -name "*.xml"`
+for xml in `find "$UNTIS_DATA_DIR/" -maxdepth 1 -type f -name "*.xml"`
 do
 	timestamp=`date '+%Y%m%d-%H%M%S'`
 
@@ -37,5 +37,6 @@ do
 	log_hist="$UNTIS_HIST_DIR/$timestamp.log"
 	mv "$log" "$log_hist"
 
-	web_wrapper
 done
+
+web_wrapper
