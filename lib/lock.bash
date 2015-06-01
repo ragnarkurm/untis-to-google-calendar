@@ -27,4 +27,6 @@ lock_eexit() {
 }
 
 lock $LOCK_PROG \
-|| lock_eexit "Only one instance of $LOCK_PROG can run at one time."
+|| exit 0
+
+# || lock_eexit "Only one instance of $LOCK_PROG can run at one time."
