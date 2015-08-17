@@ -5,6 +5,8 @@ source "$DIR/../lib/lock.bash"
 source "$DIR/../etc/conf.bash"
 export PATH="/bin:/usr/bin:$BASE/bin"
 
+processed=false
+
 for xml in `find "$UNTIS_DATA_DIR/" -maxdepth 1 -type f -name "*.xml"`
 do
 	timestamp=`date '+%Y%m%d-%H%M%S'`
@@ -29,6 +31,8 @@ do
 		continue
 	fi
 
+  processed=true
+
 	xml_hist=`basename "$xml" .xml`
 	xml_hist="$UNTIS_HIST_DIR/$timestamp.xml"
 	mv "$xml" "$xml_hist"
@@ -39,4 +43,6 @@ do
 
 done
 
-web_wrapper
+if [ "$processed" = "true" ]; then
+  web_wrapper
+fi
