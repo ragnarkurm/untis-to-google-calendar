@@ -13,6 +13,190 @@ Google Calendars have multiple uses:
 * Have actual view of your time (minutes, hours) rather that conceptual (classes).
 * Much easier to access from mobile phone than launching and searching web
 
-This code is intentionally published without documentation.
-Please contact ragnar.kurm@gmail.com
-to acquire documentation.
+
+# Install
+
+## Google account setup
+
+Create a separate dedicated google account, for example school.calendar@gmail.com
+
+After logging to the account go to "Google Developers Console"
+
+There is generated API access keys to the calendar.
+
+The name maay be something like "Untis to Google Calendar".
+
+Important steps:
+- "APIs & auth" -> APIs (need to add "Calendar API")
+- "APIs & auth" -> "Consent screen" (Fill in the fields: email, Product name)
+- "APIs & auth" -> Credentials (Only once, create Client ID -> "Create new Client ID" -> Installed application -> Other, and confirm "Create Client ID")
+- For further settings need to download from the same page JSON file. This is needed for setting up calendar software in the server.
+
+## Server setup
+
+This setup is provided for the Debian.
+
+Install and update the latest Debian.
+
+Mount a folder where is kept GPUntise XML file.
+One needs to figure this out on his own.
+This depends on IT setup of a particular organization.
+Usually his info goes to the `/etc/fstab`.
+
+Install following packs:
+
+`apt-get install git vim python3 python3-pip python3-tz php5 postfix bash`
+
+Install/upgrade Python lib for google API:
+
+`pip3 install --upgrade google-api-python-client`
+
+Create a separate Linux account for the calendar software.
+For example `calendar`.
+
+Under this unprivileged user set up email forwarding,
+to catch cron errors.
+
+`sudo - calendar`
+
+Create `.forward` file to the home,
+and add the forwarding email address there.
+
+## Set up the software
+
+Under this unprivileged user install the calendar sync software.
+
+`sudo - calendar`
+
+`git clone https://github.com/ragnarkurm/untis-to-google-calendar.git`
+
+`cd /home/calendar/untis-to-google-calendar/etc`
+
+`cp cal-default.tpl cal.tpl`
+
+In this `cal.tpl` file customize calendar web page title according to the needs.
+
+Then set up calendar location
+
+`cp conf-default.bash conf.bash`
+
+`vi conf.bash`
+
+`readonly BASE=/home/calendar/untis-to-google-calendar`
+
+Next, the configuration
+
+`cp conf-default.php conf.php`
+
+In this file, change variables values.
+These are column titles in the web.
+
+Then
+
+`cp conf-default.py conf.py`
+
+`vi conf.py`
+
+Replace `location` and `timezone` values in that file.
+
+`opts = {
+        'credential_path': basepath('state', 'credentials-untis-gcal.json'),
+        'client_secret_file': basepath('etc', 'client_secret.json'),
+        'scopes': 'https://www.googleapis.com/auth/calendar',
+        'application_name': 'Untis to Google Calendar',
+        'location': 'School Name, City, County, Country',
+        'timezone': 'Time/Zone',
+        'public_calendar': '__public_principal__@public.calendar.google.com',
+        'csv_separator': "\t",
+        'csv_replacement': ' ',
+}`
+
+Set up `client_secret.json`.
+
+`cp client_secret-default.json client_secret.json`
+
+`vi client_secret.json`
+
+or
+
+`cp downloaded.json client_secret.json`
+
+Paste the content from downloaded JSON from Google Developers Console, or just copy it.
+
+Create a link to shared/mounted path.
+
+Make sure permissions are set up properly, so that the calendar user could access it.
+
+`chown calendar /mnt/winshare`
+
+`cd /home/calendar/untis-to-google-calendar/data`
+
+`rm -rf untis`
+
+`ln -s /mnt/winshare untis`
+
+## Calendar synchronization
+
+Before the syncronization can be sarted, the application needs to be authenticated.
+
+The first execution needs to have `--noauth_local_webserver`.
+
+`./untis_to_gcal ../data/untis/untis.xml --noauth_local_webserver`
+
+The script will spit out an URL which needs to be inserted into the browser.
+It will return a code which needs to be entered into the script.
+
+Syncronization can be run like this:
+
+`/home/calendar/untis-to-google-calendar/bin/untis_to_gcal /home/calendar/untis-to-google-calendar/data/untis/untis.xml`
+
+where `untis.xml` in exported from GPUnitis.
+
+The script `untis_to_gcal_diff` compares data from Google calendar and from GPUntis XML file - teachers, rooms and studygroups.
+
+Manual import by date range:
+
+`./untis_to_gcal ../data/untis/untis.xml --begin=2015-06-08 --end=2015-07-08`
+
+The time range can also be set to the file name,
+so that the person exporting from GPUntis could control the timerange.
+Examples:
+
+- `untis_-20150708.xml` - until the date, excluding
+- `untis_20150608-.xml` - from the date, including
+- `untis_20150608-20150708.xml` - from the date (incl) to until the date (excl)
+
+The person who is doing the timetable planning (Planner) has to save files from GPUntis with a very specific names.
+The file names has to start with `untis`.
+For example: `untis.xml`.
+
+To run the synchroniztion, say, every minute, need to add following cron:
+
+`su - calendar`
+
+`crontab -e`
+
+`* * * * * /home/calendar/untis-to-google-calendar/bin/sync_wrapper`
+
+# Trobleshooting
+
+When the syncronization fails then there would be a logfile in the untis folder.
+There could be found the error message.
+The XML file wont be re-processes by following cron executions, because the logfile is already there.
+If the log file is there it signifies to the subsequesnt cron executions that the file either has been processed or is currently in the processing.
+Somtimes the problems can originate from the Google API (connectivity errors), but not necessarily from the sync software itself.
+If that is the case, then just remove the logfile to re-start or re-continue processing of the export file.
+
+# Misc
+
+Finding Teacher ID in the Calendar:
+
+- In the Google account in Google calendar
+- Click on the teacher name
+- Then Calendar settings
+- Description field holds teacher ID from Untis
+
+The architecture of the software:
+- It pulls data from the two sources: Google calendar (over the network) and the file (saved to the file by the timetable planner).
+- The both sets of data aare compared according to the specified timerage.
+- Changes are pushed back the Google calendar, to eliminate the differences.
