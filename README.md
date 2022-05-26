@@ -99,7 +99,8 @@ Then
 
 Replace `location` and `timezone` values in that file.
 
-`opts = {
+```
+opts = {
         'credential_path': basepath('state', 'credentials-untis-gcal.json'),
         'client_secret_file': basepath('etc', 'client_secret.json'),
         'scopes': 'https://www.googleapis.com/auth/calendar',
@@ -109,7 +110,8 @@ Replace `location` and `timezone` values in that file.
         'public_calendar': '__public_principal__@public.calendar.google.com',
         'csv_separator': "\t",
         'csv_replacement': ' ',
-}`
+}
+```
 
 Set up `client_secret.json`.
 
